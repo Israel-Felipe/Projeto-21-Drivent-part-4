@@ -8,3 +8,7 @@ export async function createBooking(userId: number, roomId: number) {
     },
   });
 }
+
+export async function countBooking() {
+  return prisma.booking.count();
+}
