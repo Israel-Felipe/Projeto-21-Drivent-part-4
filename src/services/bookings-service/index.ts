@@ -25,10 +25,6 @@ async function createBooking(userId: number, roomId: number) {
     throw forbiddenError();
   }
 
-  if (!roomId) {
-    throw notFoundError();
-  }
-
   const room = await roomRepository.findRoomsByRoomId(roomId);
 
   if (!room) {
@@ -57,10 +53,47 @@ async function createBooking(userId: number, roomId: number) {
 
   return booking;
 }
+/* ASDSADASDASFASDGDSGSDAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAF */
+async function changeBooking(userId: number, roomId: number, bookingId: number) {
+  const enrollment = await enrollmentRepository.findWithAddressByUserId(userId);
+  if (!enrollment) {
+    throw forbiddenError();
+  }
+
+  const ticket = await ticketRepository.findTicketByEnrollmentId(enrollment.id);
+
+  if (!ticket || ticket.status === "RESERVED" || ticket.TicketType.isRemote || !ticket.TicketType.includesHotel) {
+    throw forbiddenError();
+  }
+
+  const bookingCurrent = await bookingRepository.findBookingByBookingId(bookingId);
+  if (!bookingCurrent || bookingCurrent.userId !== userId) {
+    throw forbiddenError();
+  }
+
+  const room = await roomRepository.findRoomsByRoomId(roomId);
+
+  if (!room) {
+    throw notFoundError();
+  }
+
+  const bookingsInRoomId = await bookingRepository.findBookingByRoomId(roomId);
+
+  if (bookingsInRoomId.length >= room.capacity) {
+    throw forbiddenError();
+  }
+
+  await bookingRepository.changeBooking(bookingId, roomId);
+
+  const booking = await bookingRepository.findBookingByUserId(userId);
+
+  return booking;
+}
 
 const bookingService = {
   getBookingByUserId,
   createBooking,
+  changeBooking,
 };
 
 export default bookingService;
