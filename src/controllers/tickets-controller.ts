@@ -28,7 +28,6 @@ export async function getTickets(req: AuthenticatedRequest, res: Response) {
 export async function createTicket(req: AuthenticatedRequest, res: Response) {
   const { userId } = req;
 
-  //TODO validação do JOI
   const { ticketTypeId } = req.body;
 
   if (!ticketTypeId) {
@@ -36,11 +35,10 @@ export async function createTicket(req: AuthenticatedRequest, res: Response) {
   }
 
   try {
-    const ticketTypes = await ticketService.createTicket(userId, ticketTypeId);
+    const newTicket = await ticketService.createTicket(userId, ticketTypeId);
 
-    return res.status(httpStatus.CREATED).send(ticketTypes);
+    return res.status(httpStatus.CREATED).send(newTicket);
   } catch (error) {
     return res.sendStatus(httpStatus.NOT_FOUND);
   }
 }
-
