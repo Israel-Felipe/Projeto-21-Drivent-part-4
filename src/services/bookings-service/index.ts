@@ -35,6 +35,12 @@ async function createBooking(userId: number, roomId: number) {
     throw notFoundError();
   }
 
+  const bookingsInRoomId = await bookingRepository.findBookingByRoomId(roomId);
+
+  if (bookingsInRoomId.length >= room.capacity) {
+    throw forbiddenError();
+  }
+
   const checkBookingConflitForUserId = await bookingRepository.findBookingByUserId(userId);
   if (checkBookingConflitForUserId) {
     throw conflictError("Já existe uma reserva para este usuário");
