@@ -5,6 +5,17 @@ import ticketRepository from "@/repositories/ticket-repository";
 import roomRepository from "@/repositories/hotel-repository";
 
 async function getBookingByUserId(userId: number) {
+  const enrollment = await enrollmentRepository.findWithAddressByUserId(userId);
+  if (!enrollment) {
+    throw forbiddenError();
+  }
+
+  const ticket = await ticketRepository.findTicketByEnrollmentId(enrollment.id);
+
+  if (!ticket || ticket.status === "RESERVED" || ticket.TicketType.isRemote || !ticket.TicketType.includesHotel) {
+    throw forbiddenError();
+  }
+
   const booking = await bookingRepository.findBookingByUserId(userId);
   if (!booking) {
     throw notFoundError();
