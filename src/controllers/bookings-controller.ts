@@ -9,7 +9,7 @@ export async function getBooking(req: AuthenticatedRequest, res: Response) {
   try {
     const booking = await bookingService.getBookingByUserId(userId);
 
-    return res.status(httpStatus.OK).send(booking);
+    return res.status(httpStatus.OK).send({ bookingId: booking.id });
   } catch (error) {
     if (error.name === "NotFoundError") {
       return res.sendStatus(httpStatus.NOT_FOUND);
@@ -17,7 +17,6 @@ export async function getBooking(req: AuthenticatedRequest, res: Response) {
     if (error.name === "ForbiddenError") {
       return res.sendStatus(httpStatus.FORBIDDEN);
     }
-    return res.status(httpStatus.BAD_REQUEST).send(error);
   }
 }
 
@@ -44,17 +43,24 @@ export async function createBooking(req: AuthenticatedRequest, res: Response) {
     if (error.name === "ConflictError") {
       return res.status(httpStatus.CONFLICT).send(error.message);
     }
-    return res.status(httpStatus.BAD_REQUEST).send(error);
   }
 }
 
 export async function changeBooking(req: AuthenticatedRequest, res: Response) {
   const { userId } = req;
   const { roomId } = req.body;
-  const { bookingId } = req.params;
+  const bookingId = Number(req.params.bookingId);
+
+  if (!roomId || roomId <= 0 || typeof roomId !== "number") {
+    return res.sendStatus(httpStatus.BAD_REQUEST);
+  }
+
+  if (!bookingId || bookingId <= 0 || typeof bookingId !== "number") {
+    return res.sendStatus(httpStatus.BAD_REQUEST);
+  }
 
   try {
-    const changeBooking = await bookingService.changeBooking(userId, roomId, Number(bookingId));
+    const changeBooking = await bookingService.changeBooking(userId, roomId, bookingId);
 
     return res.status(httpStatus.OK).send({ bookingId: changeBooking.id });
   } catch (error) {
@@ -64,6 +70,5 @@ export async function changeBooking(req: AuthenticatedRequest, res: Response) {
     if (error.name === "ForbiddenError") {
       return res.sendStatus(httpStatus.FORBIDDEN);
     }
-    return res.status(httpStatus.BAD_REQUEST).send(error);
   }
 }

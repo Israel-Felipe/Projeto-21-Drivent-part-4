@@ -64,7 +64,7 @@ async function createBooking(userId: number, roomId: number) {
 
   return booking;
 }
-/* ASDSADASDASFASDGDSGSDAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAF */
+
 async function changeBooking(userId: number, roomId: number, bookingId: number) {
   const enrollment = await enrollmentRepository.findWithAddressByUserId(userId);
   if (!enrollment) {
@@ -78,14 +78,13 @@ async function changeBooking(userId: number, roomId: number, bookingId: number) 
   }
 
   const bookingCurrent = await bookingRepository.findBookingByBookingId(bookingId);
-  if (!bookingCurrent || bookingCurrent.userId !== userId) {
-    throw forbiddenError();
-  }
-
   const room = await roomRepository.findRoomsByRoomId(roomId);
 
-  if (!room) {
+  if (!room || !bookingCurrent) {
     throw notFoundError();
+  }
+  if (bookingCurrent.userId !== userId || bookingCurrent.roomId === roomId) {
+    throw forbiddenError();
   }
 
   const bookingsInRoomId = await bookingRepository.findBookingByRoomId(roomId);
